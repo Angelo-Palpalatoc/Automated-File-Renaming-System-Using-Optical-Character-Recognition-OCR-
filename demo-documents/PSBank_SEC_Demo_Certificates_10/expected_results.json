@@ -1,0 +1,141 @@
+{
+  "dataset": "Synthetic Philippine SEC-style Certificate OCR test set",
+  "total_files": 10,
+  "unique_companies": 8,
+  "repeated_company_files": [
+    "SEC_Demo_09.pdf",
+    "SEC_Demo_10.pdf"
+  ],
+  "cases": [
+    {
+      "filename": "SEC_Demo_01.pdf",
+      "company_id": "C001",
+      "expected_company_name": "SILVERBAY MERIDIAN TRADING CORPORATION",
+      "expected_registration_number": "TEST-SEC-26-0001",
+      "simulated_date": "2026-02-10",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "clean",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "SILVERBAY_MERIDIAN_TRADING_CORPORATION_SEC_CERTIFICATE.pdf",
+      "sha256": "0db9ed52d440d88d4caec764d803cb05d708482ce0171ea81f38f42aafc0a752"
+    },
+    {
+      "filename": "SEC_Demo_02.pdf",
+      "company_id": "C002",
+      "expected_company_name": "NORTHVALE INFRASTRUCTURE SOLUTIONS INC.",
+      "expected_registration_number": "TEST-SEC-26-0002",
+      "simulated_date": "2026-02-21",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "clean",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "NORTHVALE_INFRASTRUCTURE_SOLUTIONS_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "7ce07c7128ccf1852f9ed19874abbdfa3cd2f387b3ea21dc2ea0fddbd3763322"
+    },
+    {
+      "filename": "SEC_Demo_03.pdf",
+      "company_id": "C003",
+      "expected_company_name": "HARBORLIGHT AGRI SUPPLY CORPORATION",
+      "expected_registration_number": "TEST-SEC-26-0003",
+      "simulated_date": "2026-03-04",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "warm_scanner",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "HARBORLIGHT_AGRI_SUPPLY_CORPORATION_SEC_CERTIFICATE.pdf",
+      "sha256": "6b6988aff3cd7fa22242d12549117b7cece53352955df030addb453a96327312"
+    },
+    {
+      "filename": "SEC_Demo_04.pdf",
+      "company_id": "C004",
+      "expected_company_name": "LUNARIDGE PACKAGING INDUSTRIES INC.",
+      "expected_registration_number": "TEST-SEC-26-0004",
+      "simulated_date": "2026-03-18",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "mild_jpeg",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "LUNARIDGE_PACKAGING_INDUSTRIES_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "c102055e5d8d01d1b1e7f094f3e13f1fe773286f02c77545870d885b642a0ced"
+    },
+    {
+      "filename": "SEC_Demo_05.pdf",
+      "company_id": "C005",
+      "expected_company_name": "BRIGHTSTONE OFFICE SYSTEMS CORPORATION",
+      "expected_registration_number": "TEST-SEC-26-0005",
+      "simulated_date": "2026-04-07",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "clean",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "BRIGHTSTONE_OFFICE_SYSTEMS_CORPORATION_SEC_CERTIFICATE.pdf",
+      "sha256": "077d9aa057058d985d85b4c836bc7d942e380d7860c5b6f163fe6090e0b67ab7"
+    },
+    {
+      "filename": "SEC_Demo_06.pdf",
+      "company_id": "C006",
+      "expected_company_name": "EVERFIELD LOGISTICS NETWORK INC.",
+      "expected_registration_number": "TEST-SEC-26-0006",
+      "simulated_date": "2026-04-23",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "gray_scan",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "EVERFIELD_LOGISTICS_NETWORK_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "a600532f5690c9d252e0f408965c2b0404f33ff35c0fd7a7c62fa7a5ab1160db"
+    },
+    {
+      "filename": "SEC_Demo_07.pdf",
+      "company_id": "C007",
+      "expected_company_name": "SUMMITBROOK TECHNOLOGY SERVICES INC.",
+      "expected_registration_number": "TEST-SEC-26-0007",
+      "simulated_date": "2026-05-12",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "warm_scanner",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "SUMMITBROOK_TECHNOLOGY_SERVICES_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "934aab4c2f5782f6cf67f3a589540bee626e3c8ea4ca975419b909daf5f223fa"
+    },
+    {
+      "filename": "SEC_Demo_08.pdf",
+      "company_id": "C008",
+      "expected_company_name": "CEDARSTONE FOOD DISTRIBUTION CORPORATION",
+      "expected_registration_number": "TEST-SEC-26-0008",
+      "simulated_date": "2026-05-28",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "clean",
+      "duplicate_company": false,
+      "same_company_as": "",
+      "expected_renamed_filename": "CEDARSTONE_FOOD_DISTRIBUTION_CORPORATION_SEC_CERTIFICATE.pdf",
+      "sha256": "479ad2da322316c7510cecc0e3e2057380f71063b64f475bbb0ea3cd7451dfba"
+    },
+    {
+      "filename": "SEC_Demo_09.pdf",
+      "company_id": "C002",
+      "expected_company_name": "NORTHVALE INFRASTRUCTURE SOLUTIONS INC.",
+      "expected_registration_number": "TEST-SEC-26-0002",
+      "simulated_date": "2026-02-21",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "gray_skew_duplicate",
+      "duplicate_company": true,
+      "same_company_as": "SEC_Demo_02.pdf",
+      "expected_renamed_filename": "NORTHVALE_INFRASTRUCTURE_SOLUTIONS_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "62bb15be78b6ac7d7102d7f811f246e798d4399ca3c91a148e115ea21361e9d8"
+    },
+    {
+      "filename": "SEC_Demo_10.pdf",
+      "company_id": "C007",
+      "expected_company_name": "SUMMITBROOK TECHNOLOGY SERVICES INC.",
+      "expected_registration_number": "TEST-SEC-26-0007",
+      "simulated_date": "2026-05-12",
+      "document_type": "Certificate of Incorporation (SYNTHETIC)",
+      "scan_variant": "jpeg_skew_duplicate",
+      "duplicate_company": true,
+      "same_company_as": "SEC_Demo_07.pdf",
+      "expected_renamed_filename": "SUMMITBROOK_TECHNOLOGY_SERVICES_INC_SEC_CERTIFICATE.pdf",
+      "sha256": "2d6fd0dd693a6dd742fac13f8f473146a196ccb3104afbd093bf83b12c8be7c2"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+DEMO
+SYNTHETIC TEST DOCUMENT - NOT A VALID SEC CERTIFICATE
+REPUBLIC OF THE PHILIPPINES
+SECURITIES AND EXCHANGE coMM1ss10N
+Illustrative Registration Certificate Layout
+FOR SOFTWARE OCR / CLASSIFICATION TESTS ONLY
+DEMO REG. NO.: TEST-SEC-26-0007
+CERTIFICATE OF INCORPORATION
+KNOW ALL PERSONS BY THESE PRESENTS:
+This simulated certificate depicts the Articles of Incorporation and By-Laws of:
+SUMMITBROOK TECHNOLOGY SERVICES INC.
+which, in an authentic certificate, would appear with formal registration details.
+This example does not certify legal incorporation or approval of any company. All
+names, identifiers, and dates contained in this document are invented for testing.
+This sample follows the general presentation of a Certificate of Incorporation
+under the Revised Corporation Code of the Philippines (Republic Act No. 11232)
+for the exclusive purpose of testing automated scanning, document recognition,
+and indexing.
+THIS DOCUMENT DOES NOT AUTHORIZE any business activity and MUST
+NOT be used to:
+A. Claim that the company listed above is officially registered or has been
+issued a government certificate;
+B. Offer securities, act as a licensed financial intermediary, or undertake any
+activity requiring a government permit;
+C. Represent this printout as proof of identity, incorporation, authorization, or
+regulatory compliance.
+SIMULATED DATE OF REGISTRATION: 2026-05-12
+This file is machine-generated. No official seal, signature, QR verification, or SEC approval is
+provided.
+-3
+-7,
+SIMULATION ONLY I FICTITIOUS COMPANY I INVALID FOR OFFICIAL VERIFICATION
+Test Wpcument 10 - FprPSBgpk.opp[icöVi0gvdeyelopment; nqOssued by SEC
