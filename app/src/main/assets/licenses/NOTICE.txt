@@ -1,0 +1,5 @@
+ZoomImage 1.3.0 by panpf
+https://github.com/panpf/zoomimage
+Licensed under Apache License 2.0. See ZoomImage-Apache-2.0.txt in this directory.
+
+The basic local-image Compose module is used. No network image-loader integration is included.

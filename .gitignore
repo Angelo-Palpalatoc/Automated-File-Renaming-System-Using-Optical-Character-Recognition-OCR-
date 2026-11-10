@@ -8,14 +8,23 @@
 # Machine-specific IDE and toolchain files
 local.properties
 .idea/
+.settings/
 *.iml
 .tools/
 
 # Local signing keys and signing credentials
 *.keystore
 *.jks
+*.p12
+*.pfx
+*.pem
+*.key
 keystore.properties
 signing.properties
+
+# Distributable Android packages built outside the normal build folders
+*.apk
+*.aab
 
 # Local environment values (keep shareable examples)
 .env

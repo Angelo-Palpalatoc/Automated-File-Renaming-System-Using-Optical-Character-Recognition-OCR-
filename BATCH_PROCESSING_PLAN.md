@@ -1,18 +1,36 @@
 # Folder batch processing — plan for review
 
-Status: planning only. The installed `0.2.4-demo` app still processes one reviewed document at a time. No batch implementation is included in this document.
+Status: the foreground batch queue and optional XLSX company-list import are implemented in the Android demo. This document records the approved target scope and remaining validation/recovery work; it is not a statement that the whole plan has shipped.
+
+## Current implementation snapshot (2026-11-10)
+
+- Batch mode selects separate local source and output folders, optionally imports an XLSX company list, and presents the first ten pending supported files in natural filename order.
+- Those ten files are analyzed concurrently. Each row has a clickable filename for preview, an editable company field, and an individual Save action. A saved or already-processed row leaves the pending set and another pending file fills its slot.
+- Saved/skipped file identities are remembered for the same source/output pair and reconciled against destination content when the queue is rebuilt. Pending OCR results and unsaved name edits are not restored after process death.
+- The implementation currently allows up to 10,000 supported entries in the source folder. The accepted product target is 200; test 20, 50, 100, and 200 before enforcing or advertising that capacity.
+- Background processing, pause/resume of active analysis, durable restoration of review edits, and physical-device performance validation remain incomplete.
+
+## Decisions accepted on 2026-10-31
+
+- Deliver the cleaner Single Document UI, local fullscreen viewer, remembered output, and persistent duplicate protection first.
+- Detect exact duplicate content in the selected output location before OCR where possible. Hashing reads bytes locally and does not require OCR. Verify actual destination content, including after an app restart; company names alone do not identify duplicate documents. Rescanned or recompressed documents can have different hashes.
+- If destination inspection succeeds and no matching copy remains, allow normal reading/review/re-export without a missing-copy warning or extra recovery confirmation. Keep prior export records. Uncertain publication still requires output inspection.
+- Batch review will use a compact filename row that opens a document viewer and an explicit approval action, with Approve & next navigation. Do not show all previews by default or approve files automatically.
+- Retain the proposed 200-file upper limit; validate smaller batches first, including 100 files. Show ten-document review milestones to make progress manageable; each document still requires approval.
+- Foreground batch processing with Pause/Continue and durable recovery after interruption. A crash may leave an uncertain output: reconcile it before resuming that item rather than blindly creating another copy.
+- Remember output locations separately per mode and restore them after reopening. Always display the destination and provide Change; recover expired permissions explicitly.
 
 ## Current behavior and proposed capacity
 
-The current app lists up to 200 supported files from one local folder, but OCR and export are started individually. Its batch output folder groups individually saved copies; it is not a full-folder processing queue.
+The Android demo now includes a foreground batch queue alongside Single Document. The queue lists supported files and reviews up to ten pending files at a time; this does not establish that a 200-file batch has been validated on the phone or client tablet.
 
-Proposed first batch version: **up to 200 selected files per batch**, processed **one document at a time**. This is a product limit for initial validation, not a Kotlin or OCR engine maximum and not a guaranteed processing speed. Start testing with 20 files, then 50, then 200. Processing time, memory, temperature, and storage requirements must be measured on the S23 Ultra and the eventual client tablet.
+Proposed first batch release: **up to 200 selected files per batch**. This is a product limit for validation, not an OCR engine maximum or a guaranteed processing speed. Start testing with 20 files, then 50, 100, and 200. Processing time, memory, temperature, and storage requirements must be measured on the S23 Ultra and the eventual client tablet.
 
 Retain the existing per-file limits initially: supported PDF/JPG/PNG, PDFs of 1–30 pages, and a 200 MiB file-size ceiling. One multipage PDF counts as one file and receives one output filename. Each file keeps its original format and bytes when exported. Scanner-generated PDFs remain separate processed scan sources, as in the current app.
 
 ## Proposed workflow
 
-1. **Choose source and output.** Keep the source unchanged and create one uniquely named batch folder under a separate local output parent.
+1. **Choose source and output.** Keep the source unchanged and save renamed copies directly into the user-selected output folder.
 2. **Prepare the batch.** Show supported, unsupported, oversized, and selected file counts. Allow Select all supported files or individual selection. Subfolders stay excluded initially. Above 200 files, show the full count and require a selection of up to 200; never silently imply that the whole folder was processed. Remaining files can be selected for a later batch.
 3. **Start reading.** OCR each selected document sequentially. Show file progress, page progress, current filename, and readable/review/failed counts. Do not invent time estimates or confidence percentages.
 4. **Review the suggested names.** Use the batch review list and document preview described below. A suggestion is evidence for review, not authorization to export.
@@ -44,7 +62,7 @@ The review panel shows:
 
 Back in the batch list, the operator can filter All, Awaiting review, Approved, Failed, and Saved. **Export approved files (12)** saves the 12 approved items in one operation and leaves the others pending. Name edits, changed source content, or re-analysis invalidate the affected approval. Approval belongs to that document's content hash and reviewed company name, not to its row position.
 
-This proposed first version still requires a person to verify each exported company's name. The efficiency gain is automatic reading of the folder, quick in-app preview/approval, and one export action for all approved documents. It does not remove human review. The user has asked how this works; the approval policy remains open for discussion.
+This accepted first-version policy requires a person to verify each exported company's name. The efficiency gain is automatic reading of the folder, quick in-app preview/approval, and one export action for all approved documents. It does not remove human review. Group progress into milestones of ten reviewed documents without hiding remaining items or bulk-approving them.
 
 The pending company list can later help flag matches, spelling differences, and unknown companies. A list match alone does not prove that the app selected the certificate holder rather than another company mentioned in the document. Do not automatically mark matches approved.
 
@@ -113,11 +131,11 @@ The runner must own processing independently of Compose recomposition. Allow onl
 
 Acceptance requires unchanged source names/hashes, matching completed output hashes, no overwrites, no automatic export of unreviewed items, accurate result counts, and no blind retry of uncertain outputs. Measure elapsed time and memory on actual target hardware before advertising throughput.
 
-## Decisions for user review
+## Accepted scope for the later batch release
 
-- Proposed capacity: up to 200 files per batch, sequential processing; validate before increasing it.
-- Proposed review policy: read all automatically, review names with preview and Approve & next, then export all approved files together. Automatic eligibility/export has not been selected and would need a separate validated policy.
-- Proposed scope: folder-based batches first; camera capture keeps its existing workflow. Combining many camera captures into a batch can follow.
-- Proposed first-release operation: foreground processing with durable explicit pause/resume, rather than a promise of continuous background execution.
+- Capacity: up to 200 files per batch, sequential processing; validate 20, 50, 100, and 200 before claiming device support.
+- Review policy: read all automatically, open a filename to view the document, approve each item, then export all approved files together. Automatic eligibility/export is deferred.
+- Scope: folder-based batches after Single Document validation. Combining many camera captures into a batch can follow.
+- First-release operation: foreground processing with durable explicit pause/resume and restart reconciliation.
 
 See [APP_SPECIFICATION.md](./APP_SPECIFICATION.md) for the broader product decisions and [DEMO_GUIDE.md](./DEMO_GUIDE.md) for the currently implemented demo.

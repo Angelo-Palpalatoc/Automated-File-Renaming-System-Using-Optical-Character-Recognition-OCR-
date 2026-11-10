@@ -35,4 +35,12 @@ class DocumentRulesTest {
     @Test fun secretaryNameMayContainParentheses() = assertEquals(listOf("OWNER (PHILIPPINES) INC."), DocumentRules.candidates("SECRETARY'S CERTIFICATE\nCorporate Secretary of OWNER (PHILIPPINES) INC. (the Corporation)\nDO HEREBY CERTIFY THAT:"))
     @Test fun twoSecretaryDeclarationsRemainAmbiguous() = assertEquals(listOf("FIRST INC.", "SECOND INC."), DocumentRules.candidates("SECRETARY'S CERTIFICATE\nCorporate Secretary of FIRST INC. (the Corporation)\nCorporate Secretary of SECOND INC. (the Company)\nDO HEREBY CERTIFY THAT:"))
     @Test fun secretaryWithoutCompanyAnchorRequiresReview() = assertTrue(DocumentRules.candidates("SECRETARY'S CERTIFICATE\nSUNRIDGE INDUSTRIES INC.\nDO HEREBY CERTIFY THAT:").isEmpty())
+
+    @Test fun articlesFirstClauseIdentifiesHolder() = assertEquals(listOf("HARBORLIGHT AGRI SUPPLY CORPORATION"), DocumentRules.candidates("ARTICLES OF INCORPORATION\nFIRST: That the name of the corporation shall be:\nHARBORLIGHT AGRI SUPPLY CORPORATION\nSECOND: The purpose is trading."))
+    @Test fun firstClauseRequiresArticlesHeading() = assertTrue(DocumentRules.candidates("Notes\nFIRST: The name of the corporation shall be OTHER INC.").isEmpty())
+    @Test fun gisCorporateNameExcludesTradeName() = assertEquals(listOf("EVERGREEN OFFICE SUPPLIES INC."), DocumentRules.candidates("GENERAL INFORMATION SHEET\nCorporate Name: EVERGREEN OFFICE SUPPLIES INC.\nBusiness/Trade Name: OTHER SERVICES INC."))
+    @Test fun corporateNameRequiresGisContext() = assertTrue(DocumentRules.candidates("Supplier form\nCorporate Name: OTHER INC.").isEmpty())
+    @Test fun gisContextCannotCrossPage() = assertTrue(DocumentRules.candidates("GENERAL INFORMATION SHEET\u000cCorporate Name: OTHER INC.").isEmpty())
+    @Test fun realCertificateIntroDoesNotBecomeASecondCandidate() = assertEquals(listOf("OWNER INC."), DocumentRules.candidates("CERTIFICATE OF INCORPORATION\nThis is to certify that the Articles of Incorporation and By Laws of:\nOWNER INC.\nwere duly approved."))
+    @Test fun onePersonCorporationSuffix() = assertEquals(listOf("OWNER SERVICES OPC"), DocumentRules.candidates("This is to certify that\nOWNER SERVICES OPC\nhas been registered."))
 }

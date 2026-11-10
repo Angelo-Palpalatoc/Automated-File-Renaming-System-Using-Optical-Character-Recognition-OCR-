@@ -48,13 +48,7 @@ internal object LocalOcr {
                 }
             }
 
-            val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            resolver.openInputStream(entry.uri).use { BitmapFactory.decodeStream(it, null, options) }
-            options.inSampleSize = 1
-            while (maxOf(options.outWidth, options.outHeight) / options.inSampleSize > 2400) options.inSampleSize *= 2
-            options.inJustDecodeBounds = false
-            val bitmap = resolver.openInputStream(entry.uri).use { BitmapFactory.decodeStream(it, null, options) }
-                ?: throw IllegalArgumentException("Cannot decode image.")
+            val bitmap = LocalImages.decode(resolver, entry.uri, 2400)
             try {
                 progress(0, 1)
                 return Tasks.await(recognizer.process(InputImage.fromBitmap(bitmap, 0))).text.also { progress(1, 1) }

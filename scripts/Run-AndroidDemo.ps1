@@ -37,12 +37,19 @@ if ($LASTEXITCODE -ne 0) { throw 'APK installation failed; existing app data was
 & $adb -s $emulatorSerial shell mkdir -p /sdcard/Download/SEC_Demo_Source /sdcard/Download/SEC_Demo_Output
 if ($LASTEXITCODE -ne 0) { throw 'Could not prepare demo folders.' }
 # Copy only project demo documents, never arbitrary bank files from the PC.
-$samples = Get-ChildItem "$projectRoot/demo-documents" -File -Recurse | Where-Object { $_.Extension.ToLowerInvariant() -in @('.pdf', '.jpg', '.jpeg', '.png') -and $_.Name -ne 'contact_sheet.png' }
+$samples = Get-ChildItem "$projectRoot/demo-documents" -File -Recurse | Where-Object { $_.Extension.ToLowerInvariant() -in @('.pdf', '.jpg', '.jpeg', '.png', '.xlsx') -and $_.Name -ne 'contact_sheet.png' }
 foreach ($sample in $samples) {
     & $adb -s $emulatorSerial push $sample.FullName ("/sdcard/Download/SEC_Demo_Source/" + $sample.Name)
     if ($LASTEXITCODE -ne 0) { throw "Could not transfer demo document: $($sample.Name)" }
 }
+$companyWorkbook = "$projectRoot/demo-documents/company-list-fixtures-20/sample_company_list_20.xlsx"
+if (!(Test-Path -LiteralPath $companyWorkbook)) { throw 'The sample company workbook is missing from demo-documents/company-list-fixtures-20.' }
+& $adb -s $emulatorSerial push $companyWorkbook /sdcard/Download/sample_company_list_20.xlsx
+if ($LASTEXITCODE -ne 0) { throw 'Could not transfer the sample company workbook to Downloads.' }
+$workbookCheck = & $adb -s $emulatorSerial shell ls -l /sdcard/Download/sample_company_list_20.xlsx
+if ($LASTEXITCODE -ne 0 -or !$workbookCheck) { throw 'The sample company workbook did not appear in emulator Downloads.' }
+Write-Output "Company list: Download/sample_company_list_20.xlsx ($workbookCheck)"
 & $adb -s $emulatorSerial shell am start -W -n com.local.secrename/.MainActivity
 if ($LASTEXITCODE -ne 0) { throw 'Android could not start the app.' }
-Write-Output 'SEC Rename is open. Choose Download/SEC_Demo_Source, then Download/SEC_Demo_Output in the Android folder picker.'
+Write-Output 'SEC Rename is open. Enter Single Document, tap Import Excel, and choose Downloads/sample_company_list_20.xlsx. Demo input files are in Download/SEC_Demo_Source.'
 Write-Output 'For later code updates, run this script with -Build. It updates the installed app without uninstalling it.'

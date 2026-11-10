@@ -4,21 +4,31 @@ package com.local.secrename.shared
 object DocumentRules {
     private val certifyAnchor = Regex("this\\s+is\\s+to\\s+certify\\s+that\\s*[:,-]?\\s*", RegexOption.IGNORE_CASE)
     private val articlesAnchor = Regex("articles\\s+of\\s+(?:incorporation|partnership)(?:\\s+(?:and|&)\\s+by[\\s-]*laws)?\\s+of\\s*:?\\s*", RegexOption.IGNORE_CASE)
+    private val articlesHeading = Regex("""^\s*articles\s+of\s+(?:incorporation|partnership)\s*(?:of\s*:?)?\s*$""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+    private val firstClause = Regex("""\bfirst\s*[:.\-]?\s*(?:that\s+)?(?:the\s+)?name\s+of\s+(?:(?:the|said)\s+)?(?:corporation|company|partnership)\s+(?:shall\s+be|is)\s*[:.\-]?\s*""", RegexOption.IGNORE_CASE)
+    private val gisHeading = Regex("""general\s+information\s+sheet""", RegexOption.IGNORE_CASE)
+    private val corporateNameField = Regex("""^\s*(?:\d+[.)]\s*)?corporate\s+name\s*:?\s*""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
     private val presentationAnchor = Regex("know\\s+all\\s+(?:persons|men)\\s+by\\s+these\\s+presents\\s*:?\\s*", RegexOption.IGNORE_CASE)
     private val certificateHeading = Regex("certificate\\s+of\\s+(?:incorporation|registration|partnership)\\b", RegexOption.IGNORE_CASE)
     private val secretaryHeading = Regex("secretary[’']?s?\\s+certificate\\b", RegexOption.IGNORE_CASE)
     private val secretaryRole = Regex("\\b(?:assistant\\s+)?(?:corporate\\s+)?secretary\\s+of\\s+", RegexOption.IGNORE_CASE)
     private val secretaryStatement = Regex("\\b(?:do\\s+hereby\\s+certify|resolved|in\\s+witness|subscribed)\\b", RegexOption.IGNORE_CASE)
     private val companyAlias = Regex("\\(\\s*(?:the\\s+)?[\"'“”‘’]*(?:corporation|company)\\b", RegexOption.IGNORE_CASE)
-    private val end = Regex("\\b(which|has been|is hereby|was registered|having complied|a corporation|a partnership|this example|this sample)\\b", RegexOption.IGNORE_CASE)
-    private val suffix = Regex("\\b(incorporated|corporation|company|inc\\.?|corp\\.?|co\\.?|limited|ltd\\.?|partnership)\\s*$", RegexOption.IGNORE_CASE)
+    private val end = Regex("\\b(which|has been|is hereby|was registered|having complied|a corporation|a partnership|were duly|this example|this sample)\\b", RegexOption.IGNORE_CASE)
+    private val suffix = Regex("\\b(incorporated|corporation|company|inc\\.?|corp\\.?|co\\.?|limited|ltd\\.?|partnership|opc)\\s*$", RegexOption.IGNORE_CASE)
 
     fun candidates(text: String): List<String> = buildList {
         // Process pages separately so a heading on one page cannot authorize another page's name.
         for (page in text.split('\u000c')) {
             certifyAnchor.findAll(page).forEach { match -> readDirectName(page.substring(match.range.last + 1))?.let { add(it) } }
             if (secretaryHeading.containsMatchIn(page)) addAll(readSecretaryNames(page))
-            if (!certificateHeading.containsMatchIn(page)) continue
+            if (gisHeading.containsMatchIn(page)) {
+                corporateNameField.findAll(page).forEach { match -> readDirectName(page.substring(match.range.last + 1))?.let { add(it) } }
+            }
+            if (articlesHeading.containsMatchIn(page)) {
+                firstClause.findAll(page).forEach { match -> readDirectName(page.substring(match.range.last + 1))?.let { add(it) } }
+            }
+            if (!certificateHeading.containsMatchIn(page) && !articlesHeading.containsMatchIn(page)) continue
             articlesAnchor.findAll(page).forEach { match -> readDirectName(page.substring(match.range.last + 1))?.let { add(it) } }
             presentationAnchor.findAll(page).forEach { match -> addAll(readPresentationNames(page.substring(match.range.last + 1))) }
         }
@@ -78,6 +88,7 @@ object DocumentRules {
         if (value.length !in 4..180 || !suffix.containsMatchIn(value)) return false
         // A bare legal suffix or a complete prose sentence is not a certificate-holder name.
         val stem = value.replace(suffix, "").trim()
+        if (Regex("articles\\s+of", RegexOption.IGNORE_CASE).containsMatchIn(value)) return false
         return stem.any { it.isLetterOrDigit() } && !Regex("[!?;:]|\\b(?:certificate|certifies|certify|submitted|issued|registered)\\b", RegexOption.IGNORE_CASE).containsMatchIn(value)
     }
 
@@ -98,6 +109,6 @@ object DocumentRules {
             val proposal = stem + (if (index == 0) "" else " ($index)") + extension
             if (proposal.lowercase() !in occupied) return proposal
         }
-        error("Too many duplicates in this batch.")
+        error("Too many numbered filenames in the output folder.")
     }
 }

@@ -2,18 +2,18 @@
 
 > The current consolidated decisions are in [APP_SPECIFICATION.md](./APP_SPECIFICATION.md). That plan supersedes conflicting historical proposals below, including Android-only scope, unapproved Kotlin selection, and in-place renaming.
 
-> Implementation update: the Kotlin/Compose Android demo now builds, 19 tests pass, and verified-copy export replaces the old in-place rename flow. The toolchain/compilation limitations described below are historical. Physical-device validation is the next step; see [DEMO_GUIDE.md](./DEMO_GUIDE.md).
+> Historical implementation note: the Android demo and verified-copy workflow have since advanced beyond this roadmap. Use [README.md](./README.md), [ARCHITECTURE.md](./ARCHITECTURE.md), and [DEMO_GUIDE.md](./DEMO_GUIDE.md) for current implementation status; the proposals below are retained as design history unless explicitly accepted in [APP_SPECIFICATION.md](./APP_SPECIFICATION.md).
 
 ## Goal and scope
 
 ### Latest requirement: preserve originals and export renamed copies
 
-This requirement supersedes every in-place rename description elsewhere in this document. Users select a source folder and a separate output location. The application creates a new batch subfolder in that output location and writes renamed copies there. It never renames, moves, deletes, or modifies source documents. The existing Java feasibility prototype performs in-place rename and must not be used for the revised workflow until replaced. Android and Windows standalone applications are now under consideration together; Kotlin Multiplatform with Compose Multiplatform is the recommended candidate, not yet an approved stack decision.
+This requirement supersedes every in-place rename description elsewhere in this document. Users select a source folder and a separate output location. The application writes renamed copies directly into the selected output folder without creating a subfolder (updated decision: 2026-10-31). It never renames, moves, deletes, or modifies source documents. The existing Java feasibility prototype performs in-place rename and must not be used for the revised workflow until replaced. Android and Windows standalone applications are now under consideration together; Kotlin Multiplatform with Compose Multiplatform is the recommended candidate, not yet an approved stack decision.
 
 #### User flow
 
 1. Select the local source folder; recursion is off by default.
-2. Select a distinct local output parent. Reject the source itself and output nested within the source; verify resolved paths/URIs where the platform permits and report locations that cannot be safely distinguished.
+2. Select a distinct local output folder. Reject the source itself and output nested within the source; verify resolved paths/URIs where the platform permits and report locations that cannot be safely distinguished.
 3. Analyze source files and show original name, proposed company name, output name, evidence, and review status. Importing a company list remains optional.
 4. Show a batch summary and estimated output size. User starts export for reviewed documents; automatic eligibility remains gated by validation.
 5. Create a uniquely named batch output folder. For each accepted file, allocate a collision-free name using `(1)`, `(2)`, etc. Unresolved files remain pending in the review queue; do not silently omit them from the summary.
@@ -57,7 +57,7 @@ The company list is optional. Import it later from a locally saved CSV or XLSX a
 
 The first native Android prototype source is now present under `app/`. It implements local-folder selection, bundled Latin OCR for PDFs/images, conservative certificate-name extraction, editable review, duplicate filename proposals, explicit rename confirmation, and a pending-operation journal. The feasibility implementation uses Java/native Android widgets rather than Kotlin. Google ML Kit is the current bundled OCR dependency; it is not open source and remains subject to bank approval or replacement.
 
-Compilation and device validation are pending because no JDK, Gradle, Android SDK, or adb was discovered in the development environment. No APK has been produced. Company-list import, batch OCR, embedded document preview, undo, and automatic eligibility remain future milestones. See [README.md](./README.md) for build steps and limitations.
+Historical baseline from an earlier phase; the current app version and validation status are maintained in [README.md](./README.md) and [DEMO_GUIDE.md](./DEMO_GUIDE.md).
 
 The first implementation target is a standalone Android application. The earlier Windows proposal below is retained as background only and is not the active implementation stack. A desktop edition is deferred. There is no local web server, hosted application, or dependency on a bank computer.
 

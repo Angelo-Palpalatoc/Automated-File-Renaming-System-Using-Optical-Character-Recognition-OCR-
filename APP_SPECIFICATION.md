@@ -1,6 +1,6 @@
 # SEC document naming application — consolidated plan for review
 
-This is the current product plan for user review. It supersedes conflicting platform, scanner, and in-place rename proposals in the earlier [implementation plan](./IMPLEMENTATION_PLAN.md). It records decisions, not completed functionality.
+This document records the product decisions and target scope. The implementation status near the end is the source of truth for what has shipped; requirements elsewhere describe intended behavior unless marked implemented.
 
 ### Decisions confirmed after review
 
@@ -38,7 +38,7 @@ Automatically name scanned SEC documents using the certificate holder's company 
 | Processing | On-device OCR and company-name extraction; no document upload feature |
 | Company reference list | Optional; CSV/Excel list can be imported locally when available |
 | Source handling | Read-only application behavior; never rename, move, delete, or rewrite imported originals |
-| Output | User selects a separate output parent; app creates a new batch folder with renamed copies |
+| Output | User selects a separate output folder; app saves renamed copies directly there |
 | Duplicate names | Base filename, then `(1)`, `(2)`, etc.; never overwrite existing files |
 | Visual direction | PSBank-inspired blue/red on white, with neutral backgrounds and explicit status text |
 
@@ -46,11 +46,11 @@ Automatically name scanned SEC documents using the certificate holder's company 
 
 ### Import existing scans — Android and Windows
 
-1. Select the source folder and a separate output parent. Source selection does not start processing. Subfolder scanning is off by default.
+1. Select the source folder and a separate output folder. Source selection does not start processing. Subfolder scanning is off by default.
 2. Optionally import a company list or use the previously imported local list.
 3. Analyze supported documents, with progress and cancellation at safe boundaries.
 4. Inspect proposed company names, evidence, output names, and decisions. Correct or approve uncertain results.
-5. Export accepted items into a uniquely created batch folder under the output parent.
+5. Export accepted items directly into the selected output folder without creating a subfolder.
 6. See verified-copy, review-pending, failed, and incomplete counts. Reopen a batch to reconcile or resume unfinished operations.
 
 Reject source/output equivalence and output locations inside the source. Resolve filesystem links and Android document identities where possible; do not silently proceed if locations cannot be safely distinguished. Prefer bank-approved local device storage for the initial release.
@@ -85,7 +85,7 @@ Company-list import includes a preview, column mapping, official name, optional 
 Example:
 
 ```text
-Source folder (unchanged)       New batch output folder
+Source folder (unchanged)       Selected output folder
 scan001.pdf                    NORTHSTAR CORPORATION.pdf
 scan002.pdf                    NORTHSTAR CORPORATION (1).pdf
 scan003.pdf                    RIVERBEND SERVICES INC.pdf
@@ -97,7 +97,7 @@ scan003.pdf                    RIVERBEND SERVICES INC.pdf
 - Allocate duplicate numbers against both planned and existing names, recheck at execution, and use exclusive creation where available. If a provider cannot support the promised behavior, fail clearly or restrict support to tested local providers.
 - Persist an operation journal before writing. Reconcile pending/uncertain entries after interruption; do not blindly retry a potentially completed operation.
 - Report insufficient space, access loss, locked/corrupt/encrypted inputs, cancellation, and verification failures per item.
-- Resume batches explicitly. Repeated exports start a new batch only when requested, rather than silently multiplying copies.
+- Resume batches explicitly. An explicit batch is a logical queue and journal; its copies go directly into the selected output folder. Do not silently multiply copies.
 - No source rollback is needed because source files are not modified. Initial recovery uses batch history and verified outputs; automatic deletion or rollback of completed exports is excluded from the first release.
 
 ## 6. Architecture and proposed remaining components
@@ -113,7 +113,7 @@ flowchart TD
     H[Optional local company list] --> C
     C --> I[Review and export decisions]
     I --> J[Platform verified-copy adapter]
-    J --> K[New batch output folder]
+    J --> K[Selected output folder]
     C --> L[Local batch database / journal]
     J --> L
 ```
@@ -146,10 +146,10 @@ Kotlin/Compose and the OCR engine combination are chosen. Specific database, PDF
 
 ## 7. Screens and visual design
 
-1. **Home:** Android Scan button plus import folder, optional list import, output selection, and recent batches.
-2. **Batch:** processing progress, original/proposed names, filters, decision reasons, and export summary.
-3. **Review:** source page preview, nearby extracted evidence, editable accepted name, company-list suggestions, and output filename.
-4. **Company list:** import preview, field mapping, alias/duplicate checks, and recheck pending items.
+1. **Home:** Single Document and Batch Files workflow choices, DEMO label, and export history. Both workflows are present in the current Android demo.
+2. **Single Document:** camera, local photo/file selection, remembered output, duplicate state, editable name, clickable filename preview, save confirmation with Edit name, and verified-copy receipt. Keep previews closed until requested.
+3. **Batch/review:** implemented Android foreground queue with separate source/output folders, optional XLSX company list, up to ten concurrently analyzed review rows, individual saves, and automatic slot refill. Target 200-file capacity and interruption recovery still need validation/implementation.
+4. **Company list:** optional local XLSX import, sheet/column selection, and company matching are implemented for the Android demo.
 5. **History/settings:** batch results, recovery, retention, supported storage locations, and scanner readiness.
 
 Use a spacious two-pane review on Windows and larger tablets; use stacked pages/cards on phones. Provide keyboard navigation on desktop, readable contrast, and statuses that do not depend on color alone.
@@ -182,12 +182,14 @@ Acceptance includes unchanged source names/content hashes, verified output conte
 
 ## 10. Current status and remaining inputs
 
-An updated Android demo APK (`0.2.4-demo`, approximately 51.5 MiB, version code 6) has been built successfully with shared Kotlin Multiplatform naming rules and Compose UI. It implements scanner integration with camera or existing-photo selection, local folder import/OCR, expanded incorporation/Secretary's Certificate extraction, editable review, first-page preview, verified-copy export to a separate batch folder, and local history. Its presentation now includes a guided import/review/export layout, persistent status panel and recovery actions, OCR page progress, inline name validation, visible save prerequisites, verified-copy receipts, and dated completed/incomplete history. Application-owned source and tests are now entirely Kotlin, including the read-only source/OCR adapters. The earlier in-place rename action and unused Java extractor have been removed.
+The current Android demo is **0.5.1-demo** (version code 21). It includes Single Document and foreground Batch Files workflows, optional local XLSX company-list import, local OCR, editable suggestions, reviewed source-preserving export, duplicate checks, and permanent local export history. Batch review analyzes up to ten pending files at a time and refills a slot after an item is saved or recognized as already processed. Saved/skipped progress is reconciled when the same source and output folders are selected again; unsaved OCR/name edits are not restored after process death. See [DEMO_GUIDE.md](./DEMO_GUIDE.md) for the release details.
 
-Verification: 49 automated tests passed (28 shared rule cases, 3 dataset regression tests covering the ten synthetic PDF transcripts and two Secretary's Certificate excerpts, 7 legacy naming contracts now tested in Kotlin, 6 export-readiness checks, and 5 copy-integrity checks). Android lint completed with 0 errors and 6 non-blocking warnings (four dependency-update notices and two optional KTX-style suggestions). The built APK's signature verifies, and package inspection confirms minimum API 26, target API 35, arm64-v8a/armeabi-v7a/x86/x86_64 native libraries, and no app internet/network-state permissions. App backup exclusions are configured. These checks do not establish Android OCR accuracy on the physical device or a production security review.
+Verification details and the APK checksum are recorded in [DEMO_GUIDE.md](./DEMO_GUIDE.md). Earlier emulator checks covered detection of an older export before OCR, persistence after restart, two-page viewing/navigation, higher-detail rendering, double-tap/reset zoom, preserved review fields, and a verified export. The former missing-copy confirmation is superseded by the 0.3.7 behavior above. Both activity and viewer windows retain the SECURE flag. These checks do not establish extraction accuracy or certify physical phone/tablet behavior; the changed workflow still needs device retesting.
 
-The user tried the previous APK on the S23 Ultra and reported missed company names. Installation/retesting of the updated extraction, scanner initialization, local storage behavior, and airplane-mode verification still need recorded device results. Part 1 remains the OCR/rules baseline; the proposed on-device language-model fallback is deferred to part 2 after baseline validation. Company-list import, full batch automation/recovery, Windows packaging, and any iPadOS target remain future work. The HTML is a fictional design preview. See [DEMO_GUIDE.md](./DEMO_GUIDE.md) for device instructions and [README.md](./README.md) for build details.
+Remaining work includes end-to-end batch validation on the S23 Ultra and eventual client tablet, testing 20/50/100/200-file batches, and implementing recovery for in-progress OCR and review edits. Windows packaging, conditional iPadOS support, and local language-model fallback remain future work. Company-list import and foreground batch review are implemented; see [BATCH_PROCESSING_PLAN.md](./BATCH_PROCESSING_PLAN.md) for the accepted requirements and gaps.
 
 Needed during validation: representative approved certificate samples, target Android devices/versions, Windows installation restrictions, bank dependency/security requirements, and the company list when available. None requires uploading sensitive documents into this chat.
 
 Official technical references: [Compose Multiplatform](https://kotlinlang.org/docs/multiplatform/compose-multiplatform.html), [Google Document Scanner](https://developers.google.com/ml-kit/vision/doc-scanner/android), [on-device scanner flow](https://developers.google.com/ml-kit/vision/doc-scanner), [model installation options](https://developers.google.com/ml-kit/tips/installation-paths).
+
+Current retention/history behavior is implemented as described above. Background batch execution, complete interrupted-batch recovery, app authentication, production distribution automation, and document-understanding upgrades remain deferred.

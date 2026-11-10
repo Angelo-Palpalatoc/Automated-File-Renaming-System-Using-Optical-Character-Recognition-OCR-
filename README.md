@@ -1,28 +1,33 @@
 # SEC Rename — Android device demo
 
-Kotlin Multiplatform + Compose Multiplatform Android-first prototype. Shared naming rules and UI compile for Android and JVM; the Windows application and Tesseract adapter are planned next. All application-owned source and tests are Kotlin. Android-specific OCR and read-only document access live in [app/src/main/kotlin](./app/src/main/kotlin/); shared UI and extraction rules live in [shared/src/commonMain/kotlin](./shared/src/commonMain/kotlin/).
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for current component and document-flow diagrams. Open it in VS Code Markdown Preview with Ctrl+Shift+V.
+
+Kotlin Multiplatform + Compose Multiplatform Android-first prototype. Android includes Single Document and foreground Batch Files workflows, optional local XLSX company-list matching, shared naming rules, and UI. The Windows application and Tesseract adapter are planned next. All application-owned source and tests are Kotlin. Android-specific OCR and document access live in [app/src/main/kotlin](./app/src/main/kotlin/); shared UI, queue, matcher, and extraction rules live in [shared/src/commonMain/kotlin](./shared/src/commonMain/kotlin/).
 
 The Android SDK, Gradle, and Kotlin/JVM toolchain still require a JDK. Kotlin source can also use Android/JVM APIs and third-party libraries implemented in Java or native code; this does not require Java source in our application. The retired prototype Java extractor has been removed, and its seven original behavior checks now exercise the shared Kotlin rules.
 
-Built update: `0.2.4-demo` adds a guided import/review/export interface, persistent success/warning/error feedback with recovery actions, OCR page progress, filename validation, verified-copy receipts, and readable export history. Application-owned source and tests remain Kotlin; incorporation-clause and Secretary's Certificate extraction fixes are retained. The updated APK built successfully; 49 automated tests passed, lint has 0 errors and 6 non-blocking warnings, and its signature verifies. Windows OCR transcript tests are separate from Android device OCR validation. Install this update over `0.2.0-demo` or `0.2.1-demo` to try it.
+Current release: `0.5.1-demo` (version code 21). The app includes a 10-item batch review window that analyzes pending documents and refills a slot after each saved or already-processed file. Batch progress is reconstructed from verified output copies when the same source/output folders are reopened; unsaved OCR suggestions are not restored. See [DEMO_GUIDE.md](./DEMO_GUIDE.md) for current behavior and device checks.
 
 Part 1 is the OCR/rules baseline with reviewed, source-preserving export. Its current next step is S23 Ultra retesting. The proposed local-language-model fallback is part 2 and is deferred; no local LLM runtime or model has been added.
 
 ## Current demo
 
-- Android camera capture or existing-photo selection through Google ML Kit Document Scanner, basic crop/rotate mode. Tap the gallery button inside the scanner to select a photo. This creates a processed PDF without changing the original photo. Scanner components may need internet for initial preparation through Google Play services.
+- Android camera scanning through Google ML Kit Document Scanner in basic crop/rotate mode, producing a PDF. Its gallery entry remains available; Single Document also imports local JPG/PNG bytes directly through Open file. Scanner components may need initial preparation through Google Play services.
 - Bundled Latin-script ML Kit OCR for local PDF/JPG/PNG processing.
-- Source folder selection and separate output-parent selection, restricted to internal device storage.
-- One document at a time: company-name candidate, first-page preview, editable accepted name, OCR evidence, and explicit review checkbox.
-- Export original bytes into a new batch folder under the output parent. Never rename, write, or delete imported originals. Duplicate output names receive `(1)`, `(2)`, etc.
-- SHA-256 snapshot before/after OCR, bounded streaming copy, output verification, and a durable operation journal. Incomplete exports remain visibly incomplete in history; automatic restart/resume is not implemented yet.
+- One selected local PDF/JPG/PNG or camera scan at a time. Input working copies are private; shared output remains restricted to internal local device storage.
+- A remembered Single Document output location, an empty document area after saving or backgrounding, on-demand fullscreen preview, ZoomImage 1.3.0 zoom/pan controls, PDF page navigation, editable name, OCR evidence, and a save confirmation dialog with an Edit name shortcut. Confirmation is not restored automatically.
+- Exact byte-hash duplicate checks under the selected output root, including old export subfolders. Existing verified content blocks OCR and another save, even after reopening, with **Document already renamed**. Missing completed copies continue normally after successful inspection; uncertain exports require inspection and access/read errors block continuation.
+- Export original bytes directly into the selected output folder. No extra subfolder is created; old export subfolders remain covered by duplicate checks. Never rename, write, or delete imported originals. Duplicate output names receive `(1)`, `(2)`, etc.
+- SHA-256 snapshots, bounded streaming copy, output verification, and a durable operation journal. Full batch interruption recovery remains planned.
+- Optional XLSX company-list import is parsed locally and stored app-privately. Matching uses list entries first, then SEC certificate patterns; suggestions remain editable and require user approval.
+- Batch mode uses local source/output folders, processes up to 10 pending files concurrently for review, and saves each approved document separately. The code currently accepts folders with up to 10,000 supported files; performance beyond tested samples is not established.
 - PSBank-inspired working blue/red theme. Exact official color tokens have not been verified.
 
-This is a pilot for fictional or approved test documents, not a production bank release. Company-list import, multi-document batch processing, zoom/full-page navigation, automated recovery, Windows packaging, and any iPadOS target are not implemented in this demo.
+This is a demo for fictional or approved test documents, not a production bank release. Background processing, restoration of in-progress OCR/name edits, validation of the accepted 200-file capacity, Windows packaging, and any iPadOS target remain future work. The accepted product requirements and current implementation gaps are in [BATCH_PROCESSING_PLAN.md](./BATCH_PROCESSING_PLAN.md).
 
 ## Build
 
-The repository includes a Gradle 8.11.1 wrapper with distribution checksum. Tested dependency baseline: JDK 17, Android SDK 35, AGP 8.9.2, Kotlin 2.1.20, Compose Multiplatform 1.8.2. These pinned versions are used for this prototype, not asserted to be the latest versions.
+The repository includes a Gradle 8.11.1 wrapper with its matching distribution checksum. Build configuration uses JDK 17, Android SDK 35, AGP 8.9.2, Kotlin 2.1.20, and Compose Multiplatform 1.8.2. The local compile check passed with this toolchain.
 
 With a configured JDK 17/SDK installation:
 
@@ -50,9 +55,19 @@ See [DEMO_GUIDE.md](./DEMO_GUIDE.md) for transfer, installation, scanner prepara
 - No successful build implies successful device testing. Scanner preparation, runtime permissions, actual document-provider behavior, copy integrity on-device, and airplane-mode operation must be checked on the S23 Ultra.
 - The manifest removes app internet/network-state permissions and disables automatic backup. Inspect the final APK permissions. Google Play services is separate and can download scanner resources; our permission settings do not restrict it.
 - There are no document-upload endpoints, email integrations, or analytics configured by our code. ML Kit is proprietary; bank approval and dependency/network review remain release requirements.
-- Camera scan sources live in app-private storage and are removed on uninstall/app-data clearing. Export important captures before uninstalling. The scanner does not provide untouched sensor photos through this workflow; the PDF returned by it is the source digital scan.
+- Camera scans are private working PDFs. New camera scans are removed after verified renamed-copy export and a final source-hash check; failed/unexported scans and older retained captures remain. Unused imported working copies are cleaned up after retirement unless an unresolved export protects them. Originals, renamed output files, and journals are preserved. The scanner does not provide untouched sensor photos through this workflow.
 - A successful export preserves source bytes and verifies output contents. Local journals are not tamper-proof audit records. Output-folder access controls and independent backups remain bank responsibilities.
-- Only tested local document providers should be supported. The demo rejects cloud/third-party providers and output folders inside the selected source. Storage-provider publication is not claimed atomic under arbitrary concurrent external changes.
-- JPG/PNG orientation correction and automated deskew remain limited; Google-scanned PDF pages normally arrive already adjusted. Poor or rotated scans can require manual review.
+- Only tested local document providers should be supported. The demo rejects unsupported cloud/third-party providers and checks source/output separation where the original folder identity is available. Storage-provider publication is not claimed atomic under arbitrary concurrent external changes.
+- Local JPG/PNG decoding applies EXIF orientation. Automated deskew remains limited; poor or tilted scans can require manual correction/review. Physical-device image-orientation tests remain necessary.
 
 Product scope and decisions: [APP_SPECIFICATION.md](./APP_SPECIFICATION.md).
+
+## Local architecture graph
+
+The optional Graphify workflow builds a code-only graph and an Obsidian vault locally. Generated output is kept in ignored `.tools/` so demo PDFs, Excel lists, and other document contents are not indexed or committed. Install Graphify 0.9.104 with `uv tool install graphifyy==0.9.104`, then refresh the graph with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Update-ProjectGraph.ps1
+```
+
+Open `.tools/secrename-knowledge-vault` as a vault in Obsidian; `graph.canvas` shows the component map. The graph is a navigation aid, so confirm findings against source before changing architecture.

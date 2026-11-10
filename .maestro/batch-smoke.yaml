@@ -1,0 +1,6 @@
+appId: com.local.secrename
+---
+- launchApp
+- assertVisible: "SEC Rename"
+- tapOn: "Batch Files"
+- assertVisible: "Start Batch Rename"
